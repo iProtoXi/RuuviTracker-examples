@@ -1,0 +1,35 @@
+import pyb, array, time
+from pyb import I2C
+from array import array
+
+pinC0 = pyb.Pin('ENABLE_LDO4', pyb.Pin.PULL_UP)
+pinC0.high()
+pinB5 = pyb.Pin('PB5', pyb.Pin.PULL_UP)
+pinB5.high()
+i2c = I2C(1, I2C.MASTER) #init i2c
+
+currentLimit = array('B', [0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01])
+logDimm = array('B', [0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20])
+i2c.mem_write(0xFF, 0x34, 0x3D) #reset board
+i2c.mem_write(0x40, 0x34, 0x00) #enable
+i2c.mem_write(0x5B, 0x34, 0x36) #auto increment, cp auto, internal clock
+i2c.mem_write(currentLimit[:], 0x34, 0x26) #current limit 0.1mA
+i2c.mem_write(logDimm[:], 0x34, 0x06)
+time.sleep(0.001)
+while 1:
+	i2c.mem_write(255, 0x34, 0x1E)
+	i2c.mem_write(0, 0x34, 0x1D)
+	i2c.mem_write(0, 0x34, 0x18)
+	time.sleep(4)
+	i2c.mem_write(255, 0x34, 0x1D)
+	i2c.mem_write(255, 0x34, 0x18)
+	time.sleep(1)
+	i2c.mem_write(0, 0x34, 0x1E)
+	i2c.mem_write(0, 0x34, 0x1D)
+	i2c.mem_write(0, 0x34, 0x18)
+	i2c.mem_write(255, 0x34, 0x16)
+	time.sleep(4)
+	i2c.mem_write(255, 0x34, 0x1D)
+	i2c.mem_write(255, 0x34, 0x18)
+	i2c.mem_write(0, 0x34, 0x16)
+	time.sleep(1)
